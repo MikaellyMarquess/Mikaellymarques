@@ -310,7 +310,7 @@ let audioStarted = false;
   CONFIG SUPABASE (RSVP)
 ══════════════════════════════════════ */
 const SUPABASE_URL = 'https://dhihqmxjclyrqkbxshtv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWhxbXhqY2x5cnFrYnhzaHR2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjQ1MTgwOCwiZXhwIjoyMDc4MDI3ODA4fQ._zydp2QhF4eBAKWsYbDe7VF1iFqILkxe5Kw459dDaNY';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWhxbXhqY2x5cnFrYnhzaHR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTE4MDgsImV4cCI6MjA3ODAyNzgwOH0.jD0RhVMTDHc4Ch9vV_PQ2OlBfyei-PA7VmvEJ1IWi3w';
 const EVENT_ID = 'mikaelly-15';
 
 function tryPlayAudio() {
@@ -696,10 +696,20 @@ function confetti() {
 
 function isSupabaseConfigured() {
   const key = (SUPABASE_ANON_KEY || '').trim();
+  let role = '';
+  try {
+    const payloadB64 = (key.split('.')[1] || '').replace(/-/g, '+').replace(/_/g, '/');
+    const padded = payloadB64 + '='.repeat((4 - (payloadB64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    role = String(payload.role || '');
+  } catch (_) {
+    role = '';
+  }
+
   return (
     SUPABASE_URL !== 'https://SEU-PROJETO.supabase.co' &&
     !key.startsWith('COLE_A_') &&
-    !key.includes('service_role')
+    role !== 'service_role'
   );
 }
 
@@ -731,7 +741,7 @@ async function rsvp() {
   const original = btn.innerHTML;
 
   if (!isSupabaseConfigured()) {
-    alert('Configure SUPABASE_URL e SUPABASE_ANON_KEY antes de publicar.');
+    alert('Configure SUPABASE_URL e uma ANON key valida (nao use service_role).');
     return;
   }
 
