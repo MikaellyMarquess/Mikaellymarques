@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel RSVP - Mikaelly XV</title>
+  <style>
+    :root {
+      --bg: #0b1226;
+      --card: #131d3b;
+      --accent: #4fc3f7;
+      --text: #e7effa;
+      --muted: #9fb2c9;
+      --ok: #52d19b;
+      --line: #20305f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at 15% 20%, #1a2f66 0%, var(--bg) 45%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 1.1fr 0.9fr; }
+    }
+    .card {
+      background: linear-gradient(160deg, rgba(19,29,59,0.95), rgba(11,18,38,0.95));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.5rem; }
+    h2 { margin: 0 0 10px; font-size: 1.1rem; color: var(--accent); }
+    p, li { color: var(--muted); }
+    .meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 8px 0 14px;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      color: var(--text);
+      background: rgba(79,195,247,0.08);
+    }
+    .ok { color: var(--ok); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    input, button {
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #0d1835;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.95rem;
+    }
+    input { flex: 1; min-width: 180px; }
+    button {
+      cursor: pointer;
+      background: linear-gradient(180deg, #1d3f73, #17315a);
+      border-color: #2d5a9a;
+    }
+    button:hover { filter: brightness(1.1); }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      max-height: 420px;
+      overflow: auto;
+    }
+    .out {
+      margin-top: 10px;
+      border: 1px dashed #2d5a9a;
+      border-radius: 10px;
+      padding: 10px;
+      word-break: break-all;
+      color: #d4e8ff;
+      background: rgba(20,44,78,0.35);
+      min-height: 46px;
+    }
+    .small { font-size: 0.85rem; color: var(--muted); }
+    #auth-screen {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, #1f3a74 0%, #0a1124 45%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(160deg, rgba(19,29,59,0.97), rgba(11,18,38,0.97));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    }
+    #auth-error {
+      min-height: 20px;
+      margin-top: 8px;
+      color: #ff9ea6;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="auth-screen">
+    <div class="auth-card">
+      <h2>Acesso ao Painel</h2>
+      <p class="small">Digite a senha para visualizar as confirmacoes.</p>
+      <div class="row">
+        <input id="auth-pass" type="password" placeholder="Senha" />
+        <button id="auth-btn">Entrar</button>
+      </div>
+      <div id="auth-error"></div>
+    </div>
+  </div>
+
+  <div class="wrap" id="app" style="display:none;">
+    <h1>Painel de Confirmacoes</h1>
+    <p class="small">Hospede este arquivo junto do convite no GitHub Pages.</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Confirmados</h2>
+        <div class="meta">
+          <span class="pill">Evento: <strong id="event-id">mikaelly-15</strong></span>
+          <span class="pill">Total: <strong id="total">0</strong></span>
+          <span class="pill">Atualizado: <strong id="updated">-</strong></span>
+        </div>
+        <div class="row" style="margin-bottom:10px;">
+          <button id="btn-refresh">Atualizar</button>
+        </div>
+        <ul id="list"></ul>
+      </section>
+
+      <section class="card">
+        <h2>Gerador de Link</h2>
+        <p class="small">Gera link personalizado com o nome da pessoa.</p>
+        <div class="row">
+          <input id="guest-name" placeholder="Nome da convidada" />
+          <button id="btn-generate">Gerar</button>
+        </div>
+        <div class="out" id="link-out"></div>
+        <div class="row" style="margin-top:10px;">
+          <button id="btn-copy">Copiar link</button>
+          <button id="btn-open">Abrir link</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://dhihqmxjclyrqkbxshtv.supabase.co";
+    const SUPABASE_ANON_KEY = "COLE_A_SUA_ANON_KEY_AQUI";
+    const EVENT_ID = "mikaelly-15";
+    const INVITE_FILE = "aniversario2.html";
+
+    const $authScreen = document.getElementById("auth-screen");
+    const $authPass = document.getElementById("auth-pass");
+    const $authBtn = document.getElementById("auth-btn");
+    const $authError = document.getElementById("auth-error");
+    const $app = document.getElementById("app");
+
+    const $total = document.getElementById("total");
+    const $updated = document.getElementById("updated");
+    const $list = document.getElementById("list");
+    const $event = document.getElementById("event-id");
+    const $name = document.getElementById("guest-name");
+    const $out = document.getElementById("link-out");
+
+    let currentAdminSecret = "";
+
+    function isSupabaseConfigured() {
+      return (
+        SUPABASE_URL !== "https://SEU-PROJETO.supabase.co" &&
+        SUPABASE_ANON_KEY !== "COLE_A_ANON_KEY_AQUI"
+      );
+    }
+
+    function inviteBaseUrl() {
+      const url = new URL(window.location.href);
+      const basePath = url.pathname.replace(/\/[^/]*$/, "/");
+      return `${url.origin}${basePath}${INVITE_FILE}`;
+    }
+
+    function generateLink() {
+      const guest = ($name.value || "").trim();
+      if (!guest) {
+        $out.textContent = "Digite um nome para gerar o link.";
+        return "";
+      }
+      const link = `${inviteBaseUrl()}?para=${encodeURIComponent(guest)}`;
+      $out.textContent = link;
+      return link;
+    }
+
+    async function fetchConfirmations(adminSecret) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/aniversariomika_admin_list_confirmations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          p_event_id: EVENT_ID,
+          p_admin_secret: adminSecret
+        })
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || "Falha ao consultar confirmacoes.");
+      }
+
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    }
+
+    function renderConfirmations(items) {
+      $list.innerHTML = "";
+      $total.textContent = String(items.length);
+      $updated.textContent = new Date().toLocaleString("pt-BR");
+
+      if (!items.length) {
+        const li = document.createElement("li");
+        li.textContent = "Nenhuma confirmacao ainda.";
+        $list.appendChild(li);
+        return;
+      }
+
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        const when = item.confirmed_at
+          ? new Date(item.confirmed_at).toLocaleString("pt-BR")
+          : "sem data";
+        li.innerHTML = `<span class="ok">${item.guest || "Convidado(a)"}</span> - ${when}`;
+        $list.appendChild(li);
+      });
+    }
+
+    async function loadConfirmations() {
+      if (!currentAdminSecret) return;
+
+      try {
+        const items = await fetchConfirmations(currentAdminSecret);
+        renderConfirmations(items);
+      } catch (_) {
+        $list.innerHTML = "";
+        const li = document.createElement("li");
+        li.textContent = "Erro ao carregar confirmacoes. Verifique URL/chave anon e senha admin.";
+        $list.appendChild(li);
+      }
+    }
+
+    async function loginAdmin() {
+      if (!isSupabaseConfigured()) {
+        $authError.textContent = "Configure SUPABASE_URL e SUPABASE_ANON_KEY no admin.html.";
+        return;
+      }
+
+      const typed = ($authPass.value || "").trim();
+      if (!typed) {
+        $authError.textContent = "Digite a senha do painel.";
+        return;
+      }
+
+      $authError.textContent = "Validando acesso...";
+      $authBtn.disabled = true;
+
+      try {
+        const items = await fetchConfirmations(typed);
+        currentAdminSecret = typed;
+        $authScreen.style.display = "none";
+        $app.style.display = "block";
+        renderConfirmations(items);
+        $authError.textContent = "";
+      } catch (_) {
+        $authError.textContent = "Senha incorreta ou configuracao invalida.";
+      } finally {
+        $authBtn.disabled = false;
+      }
+    }
+
+    $event.textContent = EVENT_ID;
+
+    $authBtn.addEventListener("click", loginAdmin);
+    $authPass.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loginAdmin();
+    });
+
+    document.getElementById("btn-generate").addEventListener("click", generateLink);
+    document.getElementById("btn-refresh").addEventListener("click", loadConfirmations);
+
+    document.getElementById("btn-copy").addEventListener("click", async () => {
+      const link = generateLink();
+      if (!link) return;
+      try {
+        await navigator.clipboard.writeText(link);
+        $out.textContent = `${link}\n\nLink copiado.`;
+      } catch (_) {
+        $out.textContent = `${link}\n\nNao foi possivel copiar automaticamente.`;
+      }
+    });
+
+    document.getElementById("btn-open").addEventListener("click", () => {
+      const link = generateLink();
+      if (!link) return;
+      window.open(link, "_blank");
+    });
+  </script>
+</body>
+</html>

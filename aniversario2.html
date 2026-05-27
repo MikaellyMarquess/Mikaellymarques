@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>15 Anos — Mikaelly ✨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Raleway:wght@200;300;400;500&family=Montserrat:wght@200;300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#040C26;font-family:'Raleway',sans-serif}
+:root{
+  --navy:#040C26;--navy2:#0D1B4B;--navy3:#1a3080;
+  --silver:#C8D4E0;--silver2:#9AAABB;--silver3:#697B8C;
+  --blue:#4FC3F7;--blue2:#81D4FA;
+  --gold:#C9A84C;--gold2:#E8CC7A;
+}
+
+/* ─── Loading ─── */
+#loading{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--navy);transition:opacity 1.2s ease}
+.ld-m{font-family:'Great Vibes',cursive;font-size:clamp(3rem,10vw,5.5rem);font-weight:400;color:var(--silver);letter-spacing:0.1em;opacity:0;animation:fadeUp 1.4s ease forwards 0.4s}
+.ld-sub{font-size:0.6rem;font-weight:300;letter-spacing:0.5em;color:var(--silver3);text-transform:uppercase;margin-top:0.6rem;opacity:0;animation:fadeUp 1.4s ease forwards 0.8s}
+.ld-bar-wrap{width:160px;height:1px;background:rgba(200,212,224,0.15);margin-top:2.5rem}
+.ld-bar{height:1px;width:0%;background:linear-gradient(90deg,var(--navy3),var(--silver),var(--blue));animation:loadFill 2.2s ease forwards 0.5s}
+@keyframes loadFill{to{width:100%}}
+@keyframes fadeUp{to{opacity:1}}
+
+/* ─── 3D Canvas ─── */
+#three-canvas{position:fixed;inset:0;z-index:10;opacity:0;transition:opacity 1.5s ease}
+
+/* ─── Overlay Text ─── */
+#overlay-text{position:fixed;inset:0;z-index:15;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 1.8s ease;padding:1rem}
+.ot-pre{font-family:'Cormorant Garamond',serif;font-size:clamp(11px,1.8vw,17px);letter-spacing:clamp(4px,1vw,8px);color:rgba(200,212,224,0.5);text-transform:uppercase;margin-bottom:8px;font-weight:300;text-align:center}
+.ot-name{font-family:'Great Vibes',cursive;font-size:clamp(38px,10vw,100px);text-align:center;background:linear-gradient(135deg,#e8e8e8,var(--blue),#c0c0c0,var(--blue2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 35px rgba(79,195,247,0.3))}
+
+/* ─── Curtain ─── */
+#curtain{position:fixed;inset:0;z-index:30;display:flex;pointer-events:none;opacity:0}
+#cl,#cr{width:50%;height:100%;position:relative;transition:transform 2.4s cubic-bezier(0.76,0,0.24,1);will-change:transform}
+#cl{background:repeating-linear-gradient(90deg,rgba(255,255,255,0) 0px,rgba(255,255,255,0) 16px,rgba(255,255,255,0.025) 16px,rgba(255,255,255,0.025) 20px,rgba(0,0,0,0.08) 20px,rgba(0,0,0,0.08) 26px,rgba(255,255,255,0.015) 26px,rgba(255,255,255,0.015) 28px),linear-gradient(180deg,#1a3080 0%,#0D1B4B 35%,#040C26 100%)}
+#cr{background:repeating-linear-gradient(90deg,rgba(255,255,255,0.015) 0px,rgba(255,255,255,0.015) 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 8px,rgba(255,255,255,0.025) 8px,rgba(255,255,255,0.025) 12px,rgba(255,255,255,0) 12px,rgba(255,255,255,0) 28px),linear-gradient(180deg,#1a3080 0%,#0D1B4B 35%,#040C26 100%)}
+#cl::after{content:'';position:absolute;right:0;top:0;width:5px;height:100%;background:linear-gradient(180deg,var(--gold2),var(--gold),var(--gold2),var(--gold));box-shadow:0 0 14px rgba(201,168,76,0.5)}
+#cr::after{content:'';position:absolute;left:0;top:0;width:5px;height:100%;background:linear-gradient(180deg,var(--gold2),var(--gold),var(--gold2),var(--gold));box-shadow:0 0 14px rgba(201,168,76,0.5)}
+#cl::before,#cr::before{content:'';position:absolute;bottom:0;left:0;right:0;height:28px;background:repeating-linear-gradient(90deg,var(--gold) 0px,var(--gold) 2px,transparent 2px,transparent 7px);opacity:0.6}
+
+/* ─── Particle BG ─── */
+#pbg{position:fixed;inset:0;z-index:12;opacity:0;pointer-events:none;transition:opacity 2s ease}
+#pbg canvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* ─── BG deco ─── */
+#deco15{position:fixed;z-index:13;font-family:'Great Vibes',cursive;font-weight:400;font-size:clamp(28vw,45vw,500px);color:rgba(13,27,75,0.4);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;user-select:none;white-space:nowrap;opacity:0;transition:opacity 3s ease 1s}
+
+/* ─── Invitation ─── */
+#invite{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;overflow-y:auto;overflow-x:hidden;opacity:0;transition:opacity 1.5s ease;padding:1.5rem 0.8rem}
+.card{text-align:center;padding:clamp(1.5rem,4vw,3.5rem) clamp(1.2rem,4vw,4rem);max-width:560px;width:100%;position:relative;border:0.5px solid rgba(200,212,224,0.18);background:rgba(4,12,38,0.78);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.card::before{content:'';position:absolute;inset:7px;border:0.5px solid rgba(201,168,76,0.2);pointer-events:none}
+.co{position:absolute;width:18px;height:18px;border-color:rgba(201,168,76,0.5);border-style:solid}
+.co-tl{top:12px;left:12px;border-width:1px 0 0 1px}.co-tr{top:12px;right:12px;border-width:1px 1px 0 0}
+.co-bl{bottom:12px;left:12px;border-width:0 0 1px 1px}.co-br{bottom:12px;right:12px;border-width:0 1px 1px 0}
+
+.el{opacity:0;transform:translateY(22px);transition:opacity 0.9s ease,transform 0.9s ease}
+.el.scale-in{opacity:0;transform:scale(0.82);transition:opacity 0.9s ease,transform 0.9s cubic-bezier(0.34,1.56,0.64,1)}
+.el.show{opacity:1;transform:translateY(0) scale(1)}
+
+.inv-sparkle{display:inline-block;margin-bottom:4px}
+.inv-sparkle svg{width:clamp(36px,8vw,50px);height:clamp(36px,8vw,50px);fill:none;stroke:url(#crownGrad);stroke-width:1.5;filter:drop-shadow(0 0 12px rgba(79,195,247,0.4));animation:crownFloat 4s ease-in-out infinite}
+@keyframes crownFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+.tag{font-size:clamp(0.5rem,1.2vw,0.62rem);font-weight:400;letter-spacing:0.45em;color:var(--blue);text-transform:uppercase;margin-bottom:0.4rem}
+.guest{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(0.9rem,2.2vw,1.35rem);color:var(--silver);margin-bottom:0.3rem;min-height:1.4em}
+.divider{display:flex;align-items:center;gap:0.8rem;margin:1rem auto;max-width:250px}
+.dl{flex:1;height:0.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.dd{width:5px;height:5px;background:var(--gold);transform:rotate(45deg);flex-shrink:0}
+
+.num15{font-family:'Great Vibes',cursive;font-weight:400;font-size:clamp(4rem,15vw,8rem);line-height:1;color:transparent;background:linear-gradient(135deg,var(--silver3) 0%,var(--silver) 25%,#fff 50%,var(--blue2) 75%,var(--silver) 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;animation:shimmer 5s linear infinite;margin-bottom:-0.1em}
+@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+.anos{font-size:clamp(0.55rem,1.2vw,0.65rem);font-weight:300;letter-spacing:0.6em;color:var(--silver3);text-transform:uppercase;margin-bottom:0.2rem}
+.name{font-family:'Great Vibes',cursive;font-weight:400;font-size:clamp(2rem,7vw,4.2rem);letter-spacing:0.04em;color:transparent;background:linear-gradient(135deg,#e8e8e8,var(--blue),#c0c0c0);-webkit-background-clip:text;background-clip:text;margin:0.3rem 0;filter:drop-shadow(0 4px 15px rgba(79,195,247,0.15))}
+
+.inv-msg{font-family:'Cormorant Garamond',serif;font-size:clamp(13px,2vw,17px);line-height:1.9;color:rgba(160,180,200,0.7);max-width:420px;margin:12px auto 0;font-weight:300}
+
+.inv-card{position:relative;margin:20px 0;padding:clamp(18px,3vw,28px) clamp(14px,3vw,20px);background:linear-gradient(135deg,rgba(13,27,62,0.5),rgba(6,13,32,0.8));border:1px solid rgba(135,206,250,0.08);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.4),inset 0 1px 0 rgba(192,192,192,0.05);backdrop-filter:blur(20px);overflow:hidden}
+.inv-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(135,206,250,0.03),transparent,rgba(192,192,192,0.03),transparent);animation:cardRotate 12s linear infinite}
+@keyframes cardRotate{to{transform:rotate(360deg)}}
+.inv-detail{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,14px);margin:clamp(10px,1.5vw,14px) 0;position:relative;z-index:1}
+.inv-detail-icon{font-size:clamp(14px,2.5vw,18px);opacity:.8;min-width:22px;text-align:center}
+.inv-detail-text{font-family:'Cormorant Garamond',serif;font-size:clamp(13px,2vw,15px);color:rgba(200,210,225,0.8);font-weight:300;text-align:left}
+.inv-detail-text strong{color:#d0dce8;font-weight:600}
+
+.inv-dress{margin-top:18px;padding:clamp(12px,2vw,16px);border:1px solid rgba(192,192,192,0.06);border-radius:12px;background:rgba(10,15,30,0.5)}
+.inv-dress-title{font-size:clamp(0.5rem,1.1vw,0.58rem);letter-spacing:4px;text-transform:uppercase;color:rgba(79,195,247,0.4);margin-bottom:10px;font-weight:300}
+.inv-colors{display:flex;justify-content:center;gap:10px}
+.inv-color{width:clamp(22px,4vw,26px);height:clamp(22px,4vw,26px);border-radius:50%;border:2px solid rgba(255,255,255,0.1);box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:transform .3s,box-shadow .3s}
+.inv-color:hover{transform:scale(1.2);box-shadow:0 4px 20px rgba(135,206,250,0.3)}
+
+.btn{display:inline-block;margin-top:1.5rem;padding:clamp(0.65rem,1.5vw,0.8rem) clamp(1.8rem,5vw,2.8rem);border:0.5px solid var(--gold);color:var(--gold);font-family:'Raleway',sans-serif;font-size:clamp(0.55rem,1.1vw,0.62rem);font-weight:400;letter-spacing:0.4em;text-transform:uppercase;text-decoration:none;cursor:pointer;background:transparent;transition:all 0.35s ease;position:relative;overflow:hidden}
+.btn span{position:relative;z-index:1}
+.btn::before{content:'';position:absolute;inset:0;background:var(--gold);transform:translateX(-101%);transition:transform 0.35s cubic-bezier(0.76,0,0.24,1)}
+.btn:hover::before{transform:translateX(0)}
+.btn:hover{color:var(--navy)}
+
+.inv-footer{margin-top:clamp(20px,4vw,35px);font-size:clamp(0.45rem,1vw,0.55rem);letter-spacing:5px;color:rgba(70,100,140,0.35);text-transform:uppercase}
+
+/* Stars */
+@keyframes twinkle{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+.star{position:fixed;pointer-events:none;z-index:11;width:3px;height:3px;border-radius:50%;background:#fff;animation:twinkle var(--dur,2s) ease-in-out infinite var(--del,0s)}
+
+/* Confetti */
+@keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.conf{position:fixed;top:-10px;z-index:21;pointer-events:none;width:6px;height:6px;animation:confettiFall var(--spd,4s) ease-in forwards var(--dl,0s)}
+
+/* Audio */
+#audio-btn{position:fixed;bottom:20px;left:20px;z-index:999;width:38px;height:38px;border-radius:50%;border:1px solid rgba(200,212,224,0.12);background:rgba(6,13,32,0.7);color:rgba(200,212,224,0.4);font-size:14px;cursor:pointer;backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;transition:all .3s}
+#audio-btn:hover{border-color:rgba(79,195,247,0.4);color:var(--blue)}
+#audio-btn.playing{color:var(--blue);border-color:rgba(79,195,247,0.3)}
+/* Start Button */
+#btn-start{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;padding:clamp(12px,3vw,18px) clamp(24px,5vw,36px);font-family:'Raleway',sans-serif;font-size:clamp(0.8rem,2vw,1.2rem);letter-spacing:4px;text-transform:uppercase;color:var(--gold);background:rgba(6,13,32,0.85);border:1px solid var(--gold);border-radius:30px;cursor:pointer;opacity:0;pointer-events:none;transition:all 0.5s ease;backdrop-filter:blur(8px);box-shadow:0 0 20px rgba(201,168,76,0.2)}
+#btn-start:hover{background:var(--gold);color:var(--navy);box-shadow:0 0 30px rgba(201,168,76,0.5)}
+
+/* ─── RESPONSIVO ─── */
+@media(max-width:480px){
+  .card{padding:1.5rem 1rem;border-radius:0}
+  .co{width:14px;height:14px}
+  .co-tl{top:10px;left:10px}.co-tr{top:10px;right:10px}.co-bl{bottom:10px;left:10px}.co-br{bottom:10px;right:10px}
+  .card::before{inset:5px}
+  .inv-card{border-radius:12px;padding:16px 12px}
+  .inv-detail{flex-direction:column;gap:2px;margin:12px 0}
+  .inv-detail-text{text-align:center}
+  .divider{max-width:180px}
+  .btn{padding:0.7rem 2rem;letter-spacing:0.3em}
+}
+@media(max-height:700px) and (max-width:480px){
+  #invite{align-items:flex-start;padding-top:1rem}
+  .num15{font-size:3.5rem}
+  .name{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Audio — Beauty and the Beast (MIDI/royalty-free version) -->
+<audio id="bgmusic" loop preload="auto">
+  <!-- 
+    ⚠️ IMPORTANTE: Coloque aqui o arquivo de música.
+    Opções:
+    1. Arquivo local: <source src="bela-e-a-fera.mp3" type="audio/mpeg">
+    2. URL direta de um MP3 hospedado
+    
+    Exemplo com arquivo local na mesma pasta:
+  -->
+  <source src="bela-e-a-fera.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="ld-m">Mikaelly</div>
+  <div class="ld-sub">Carregando convite</div>
+  <div class="ld-bar-wrap"><div class="ld-bar"></div></div>
+</div>
+
+<!-- Botão de Início -->
+<button id="btn-start">Abrir Convite</button>
+
+<!-- 3D Scene -->
+<canvas id="three-canvas"></canvas>
+
+<!-- Overlay Text -->
+<div id="overlay-text">
+  <div>
+    <div class="ot-pre">os quinze anos de</div>
+    <div class="ot-name">Mikaelly</div>
+  </div>
+</div>
+
+<!-- Big deco -->
+<div id="deco15">15</div>
+
+<!-- Particle BG -->
+<div id="pbg"></div>
+
+<!-- Curtain -->
+<div id="curtain"><div id="cl"></div><div id="cr"></div></div>
+
+<!-- Invitation -->
+<div id="invite">
+  <div class="card">
+    <div class="co co-tl"></div><div class="co co-tr"></div>
+    <div class="co co-bl"></div><div class="co co-br"></div>
+
+    <div class="inv-sparkle el scale-in" id="e0">
+      <svg viewBox="0 0 60 60">
+        <defs><linearGradient id="crownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#c0c0c0"/><stop offset="50%" stop-color="#87CEEB"/><stop offset="100%" stop-color="#c0c0c0"/>
+        </linearGradient></defs>
+        <path d="M10 40 L10 25 L20 32 L30 18 L40 32 L50 25 L50 40 Z"/>
+        <line x1="10" y1="43" x2="50" y2="43" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <p class="tag el" id="e1">Você está convidado(a)</p>
+    <p class="guest el" id="e2"></p>
+
+    <div class="divider el" id="e3"><div class="dl"></div><div class="dd"></div><div class="dl"></div></div>
+
+    <div class="num15 el scale-in" id="e4">15</div>
+    <p class="anos el" id="e5">Anos</p>
+    <p class="name el" id="e6">Mikaelly</p>
+
+    <div class="divider el" id="e7"><div class="dl"></div><div class="dd"></div><div class="dl"></div></div>
+
+    <p class="inv-msg el" id="e8">
+      Com imenso carinho, convido <span id="guest-inline">você</span> para celebrar comigo esta noite tão especial.<br>
+      Sua presença tornará este momento ainda mais inesquecível.
+    </p>
+
+    <div class="inv-card el" id="e9">
+      <div class="inv-detail">
+        <span class="inv-detail-icon">📅</span>
+        <span class="inv-detail-text"><strong>Sábado, 14 de Junho de 2025</strong></span>
+      </div>
+      <div class="inv-detail">
+        <span class="inv-detail-icon">🕗</span>
+        <span class="inv-detail-text"><strong>13h00 às 19h00</strong> — Festa</span>
+      </div>
+      <div class="inv-detail">
+        <span class="inv-detail-icon">📍</span>
+        <span class="inv-detail-text"><strong>R. Barra de Santo Antônio, 17</strong><br>Jardim Brasil, Guarulhos - SP, 07270-190</span>
+      </div>
+    </div>
+
+    <div class="inv-dress el" id="e10">
+      <div class="inv-dress-title">Dress Code — Traje Social</div>
+      <div class="inv-colors">
+        <div class="inv-color" style="background:linear-gradient(135deg,#d0d0d0,#a0a0a0)" title="Prata"></div>
+        <div class="inv-color" style="background:linear-gradient(135deg,#1a2a5e,#0d1b4a)" title="Azul Marinho"></div>
+        <div class="inv-color" style="background:linear-gradient(135deg,#87CEEB,#5ba8d4)" title="Azul Claro"></div>
+      </div>
+    </div>
+
+    <button class="btn el" id="e11" onclick="rsvp()"><span>Confirmar Presença</span></button>
+
+    <div class="inv-footer el" id="e12">✦ Mikaelly — XV Anos ✦</div>
+  </div>
+</div>
+
+<button id="audio-btn">♪</button>
+
+<script>
+/* ══════════════════════════════════════
+   NOME DO CONVIDADO VIA URL
+   
+   Formas de usar:
+   
+   convite.html?para=Julio Kevyn
+   convite.html?para=Maria Clara
+   convite.html?convidado=Ana
+   convite.html?nome=João Pedro
+   
+   Espaços podem ser:
+   - %20  → convite.html?para=Julio%20Kevyn
+   - +    → convite.html?para=Julio+Kevyn
+   
+   Exemplos de links para enviar:
+   https://seusite.com/convite.html?para=Julio%20Kevyn
+   https://seusite.com/convite.html?para=Maria%20Clara
+   https://seusite.com/convite.html?para=Ana%20Beatriz
+══════════════════════════════════════ */
+function sanitizeGuestName(value) {
+  if (!value) return '';
+  const clean = value
+    .replace(/[\u0000-\u001F\u007F]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return clean.slice(0, 60);
+}
+
+function getGuestNameFromUrl() {
+  const keys = ['para', 'convidado', 'convidada', 'nome', 'guest', 'g'];
+  const searchParams = new URLSearchParams(location.search);
+  for (const key of keys) {
+    const found = searchParams.get(key);
+    if (found) return sanitizeGuestName(found);
+  }
+
+  // Suporte opcional a hash: #nome=Maria%20Clara
+  const hash = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
+  const hashParams = new URLSearchParams(hash);
+  for (const key of keys) {
+    const found = hashParams.get(key);
+    if (found) return sanitizeGuestName(found);
+  }
+
+  return '';
+}
+
+const guest = getGuestNameFromUrl();
+const guestDisplay = guest || 'Convidado(a) Especial';
+document.getElementById('e2').textContent = guestDisplay + ',';
+document.getElementById('guest-inline').textContent = guest || 'você';
+
+/* ══════════════════════════════════════
+   ÁUDIO — A Bela e a Fera
+══════════════════════════════════════ */
+const audio = document.getElementById('bgmusic');
+const audioBtn = document.getElementById('audio-btn');
+let audioPlaying = false;
+let audioStarted = false;
+
+/* ══════════════════════════════════════
+  CONFIG SUPABASE (RSVP)
+══════════════════════════════════════ */
+const SUPABASE_URL = 'https://dhihqmxjclyrqkbxshtv.supabase.co';
+const SUPABASE_ANON_KEY = 'COLE_A_SUA_ANON_KEY_AQUI';
+const EVENT_ID = 'mikaelly-15';
+
+function tryPlayAudio() {
+  if (audioStarted) return;
+  audioStarted = true;
+  audio.volume = 0;
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      audioPlaying = true;
+      audioBtn.classList.add('playing');
+      audioBtn.textContent = '♪';
+      // Fade in
+      let vol = 0;
+      const fadeIn = setInterval(() => {
+        vol += 0.02;
+        if (vol >= 0.5) { vol = 0.5; clearInterval(fadeIn); }
+        audio.volume = vol;
+      }, 80);
+    }).catch(() => {
+      audioStarted = false;
+      // Navegador bloqueou, vai tentar no próximo toque
+    });
+  }
+}
+
+audioBtn.addEventListener('click', () => {
+  if (!audioStarted) {
+    tryPlayAudio();
+    return;
+  }
+  if (audioPlaying) {
+    audio.pause();
+    audioPlaying = false;
+    audioBtn.classList.remove('playing');
+    audioBtn.textContent = '♪';
+    audioBtn.style.opacity = '0.5';
+  } else {
+    audio.play();
+    audioPlaying = true;
+    audioBtn.classList.add('playing');
+    audioBtn.textContent = '♪';
+    audioBtn.style.opacity = '1';
+  }
+});
+
+// Tenta tocar no primeiro toque/clique na tela
+document.addEventListener('click', () => tryPlayAudio(), { once: true });
+document.addEventListener('touchstart', () => tryPlayAudio(), { once: true });
+
+/* ══════════════════════════════════════
+   THREE.JS SCENE
+══════════════════════════════════════ */
+const cvs = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas: cvs, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x040C26);
+scene.fog = new THREE.FogExp2(0x040C26, 0.022);
+
+const cam = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 150);
+
+/* ── Lights ── */
+scene.add(new THREE.AmbientLight(0x1a3080, 1.5));
+
+const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+sun.position.set(4, 16, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+scene.add(sun);
+
+const blueColors = [0x4FC3F7, 0x81D4FA, 0x29B6F6, 0x4FC3F7];
+for (let i = 0; i < 10; i++) {
+  const pl = new THREE.PointLight(blueColors[i % 4], 1.2, 10);
+  const side = (i % 2 === 0) ? 3.2 : -3.2;
+  pl.position.set(side, i * 0.65 + 0.5, -i * 0.9);
+  scene.add(pl);
+}
+
+const topL = new THREE.PointLight(0xC8D4E0, 3, 30);
+topL.position.set(0, 18, -4);
+scene.add(topL);
+
+const goldL = new THREE.PointLight(0xC9A84C, 2, 15);
+goldL.position.set(0, -2, -18);
+scene.add(goldL);
+
+/* ── Materials ── */
+const matStep = new THREE.MeshStandardMaterial({ color: 0x0d1b4a, metalness: 0.7, roughness: 0.25, emissive: 0x0a1535, emissiveIntensity: 0.15 });
+const matEdge = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 0.9, roughness: 0.1, emissive: 0x87CEEB, emissiveIntensity: 0.1 });
+const matCarpet = new THREE.MeshStandardMaterial({ color: 0x0D1B4B, roughness: 0.85, metalness: 0.0 });
+const matGold = new THREE.MeshStandardMaterial({ color: 0xC9A84C, metalness: 0.92, roughness: 0.08 });
+const matFloor = new THREE.MeshStandardMaterial({ color: 0x050a15, metalness: 0.8, roughness: 0.2 });
+const matCol = new THREE.MeshStandardMaterial({ color: 0x0d1b3e, metalness: 0.6, roughness: 0.3, emissive: 0x0a1535, emissiveIntensity: 0.1 });
+
+/* ── Staircase ── */
+const STEPS = 18;
+const SW = 5.2, SH = 0.22, SD = 1.1, RISE = 0.65;
+const stairG = new THREE.Group();
+scene.add(stairG);
+
+for (let i = 0; i < STEPS; i++) {
+  const y = i * RISE, z = -i * SD * 0.82;
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(SW, SH, SD), matStep);
+  slab.position.set(0, y, z); slab.castShadow = true; slab.receiveShadow = true;
+  stairG.add(slab);
+  const edge = new THREE.Mesh(new THREE.BoxGeometry(SW + 0.05, 0.03, 0.05), matEdge);
+  edge.position.set(0, y + SH / 2, z + SD / 2);
+  stairG.add(edge);
+  const carp = new THREE.Mesh(new THREE.BoxGeometry(SW * 0.45, SH * 0.3, SD * 0.8), matCarpet);
+  carp.position.set(0, y + SH / 2 + 0.04, z);
+  stairG.add(carp);
+}
+
+// Rails
+const railMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 0.95, roughness: 0.05, emissive: 0x87CEEB, emissiveIntensity: 0.05 });
+for (let s of [-1, 1]) {
+  const pts = [];
+  for (let i = 0; i < STEPS; i++) pts.push(new THREE.Vector3(s * (SW / 2 - 0.15), i * RISE + 1.1, -i * SD * 0.82));
+  const curve = new THREE.CatmullRomCurve3(pts);
+  const rail = new THREE.Mesh(new THREE.TubeGeometry(curve, 60, 0.04, 8, false), railMat);
+  rail.castShadow = true;
+  stairG.add(rail);
+  for (let i = 0; i < STEPS; i += 2) {
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 1.0, 6), railMat);
+    b.position.set(s * (SW / 2 - 0.15), i * RISE + 0.55, -i * SD * 0.82);
+    stairG.add(b);
+  }
+  const sph = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), matGold);
+  sph.position.set(s * (SW / 2 - 0.15), (STEPS - 1) * RISE + 1.5, -(STEPS - 1) * SD * 0.82);
+  stairG.add(sph);
+}
+
+// Floor, wall, columns
+const floorM = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), matFloor);
+floorM.rotation.x = -Math.PI / 2; floorM.position.set(0, -0.12, -5); floorM.receiveShadow = true;
+scene.add(floorM);
+
+const wall = new THREE.Mesh(new THREE.PlaneGeometry(30, 20), new THREE.MeshStandardMaterial({ color: 0x080d1a, metalness: 0.3, roughness: 0.8 }));
+wall.position.set(0, 10, -20); wall.receiveShadow = true;
+scene.add(wall);
+
+for (let s of [-1, 1]) {
+  const col = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 16, 12), matCol);
+  col.position.set(s * 6, 8, -6); col.castShadow = true;
+  scene.add(col);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.3, 0.4, 12), matCol);
+  cap.position.set(s * 6, 16, -6);
+  scene.add(cap);
+}
+
+for (let i = -5; i <= 5; i++) {
+  for (let j = -5; j <= 5; j++) {
+    if ((Math.abs(i) + Math.abs(j)) % 3 !== 0) continue;
+    const tile = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.01, 1.8), new THREE.MeshStandardMaterial({ color: 0x0A1530, metalness: 0.7, roughness: 0.3 }));
+    tile.position.set(i * 2, -0.1, -5 + j * 2);
+    scene.add(tile);
+  }
+}
+
+/* ── Chandelier ── */
+const chandelierG = new THREE.Group();
+const crystalMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 1, roughness: 0, emissive: 0x87CEEB, emissiveIntensity: 0.2, transparent: true, opacity: 0.6 });
+const frameMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 0.95, roughness: 0.05 });
+chandelierG.add(new THREE.Mesh(new THREE.TorusGeometry(2.0, 0.03, 8, 40), frameMat));
+for (let i = 0; i < 28; i++) { const a = (i / 28) * Math.PI * 2; const cr = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.35, 4), crystalMat); cr.position.set(Math.cos(a) * 2, -0.3, Math.sin(a) * 2); cr.rotation.x = Math.PI; chandelierG.add(cr); }
+chandelierG.add(new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.025, 8, 30), frameMat));
+for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; const cr = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.28, 4), crystalMat); cr.position.set(Math.cos(a) * 1.1, -0.25, Math.sin(a) * 1.1); cr.rotation.x = Math.PI; chandelierG.add(cr); }
+const chandLight = new THREE.PointLight(0x87CEEB, 1.5, 25);
+chandLight.position.set(0, -0.5, 0); chandelierG.add(chandLight);
+const glow = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), new THREE.MeshBasicMaterial({ color: 0x87CEEB, transparent: true, opacity: 0.3 }));
+glow.position.set(0, -0.3, 0); chandelierG.add(glow);
+chandelierG.position.set(0, 18, -7);
+scene.add(chandelierG);
+
+/* ── Light Orb ── */
+const orbLight = new THREE.PointLight(0x87CEEB, 3, 8);
+scene.add(orbLight);
+const orbGlow = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 }));
+scene.add(orbGlow);
+const orbHalo = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), new THREE.MeshBasicMaterial({ color: 0x87CEEB, transparent: true, opacity: 0.15 }));
+scene.add(orbHalo);
+
+const trailCount = 80;
+const trailGeo = new THREE.BufferGeometry();
+const trailPos = new Float32Array(trailCount * 3);
+trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
+const trailMat = new THREE.PointsMaterial({ color: 0xC9A84C, size: 0.06, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false });
+const trailPts = new THREE.Points(trailGeo, trailMat);
+scene.add(trailPts);
+const trailHistory = [];
+
+/* ── Sparkle Particles ── */
+(() => {
+  const N = 400, pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * 20; pos[i * 3 + 1] = Math.random() * 22; pos[i * 3 + 2] = (Math.random() - 0.5) * 25; }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const sc = document.createElement('canvas'); sc.width = 32; sc.height = 32;
+  const sx = sc.getContext('2d');
+  const sg = sx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(0.35, 'rgba(130,200,255,0.7)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+  sx.fillStyle = sg; sx.fillRect(0, 0, 32, 32);
+  const mat = new THREE.PointsMaterial({ size: 0.1, map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: 0x81D4FA });
+  window._pts = new THREE.Points(geo, mat);
+  scene.add(window._pts);
+})();
+
+/* ══════════════════════════════════════
+   CAMERA ANIMATION
+══════════════════════════════════════ */
+const TOTAL_DUR = 8.5;
+let t0 = null, done = false;
+
+function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+function animateScene(ts) {
+  if (done) return;
+  if (!t0) t0 = ts;
+  const elapsed = (ts - t0) / 1000;
+  const t = Math.min(elapsed / TOTAL_DUR, 1);
+  const e = ease(t);
+
+  const camY = 14 - e * 12;
+  const camZ = 14 - e * 16;
+  cam.position.set(Math.sin(e * 0.6) * 3.5, camY, camZ);
+  cam.lookAt(new THREE.Vector3(0, 8 - e * 7, -2 - e * 6));
+
+  // Orb
+  const orbStep = e * (STEPS - 1);
+  const orbY = orbStep * RISE + 0.8;
+  const orbZ = -orbStep * SD * 0.82;
+  orbLight.position.set(0, orbY, orbZ);
+  orbGlow.position.copy(orbLight.position);
+  orbHalo.position.copy(orbLight.position);
+  orbHalo.scale.setScalar(1 + Math.sin(elapsed * 3) * 0.2);
+  orbGlow.material.opacity = 0.7 + Math.sin(elapsed * 4) * 0.3;
+
+  trailHistory.unshift({ x: 0, y: orbY, z: orbZ });
+  if (trailHistory.length > trailCount) trailHistory.pop();
+  for (let i = 0; i < trailCount; i++) {
+    const p = trailHistory[Math.min(i, trailHistory.length - 1)];
+    trailPos[i * 3] = p.x + (Math.random() - 0.5) * 0.15;
+    trailPos[i * 3 + 1] = p.y + (Math.random() - 0.5) * 0.15;
+    trailPos[i * 3 + 2] = p.z + (Math.random() - 0.5) * 0.15;
+  }
+  trailGeo.attributes.position.needsUpdate = true;
+  trailMat.opacity = 0.4 + Math.sin(elapsed * 2) * 0.2;
+
+  if (window._pts) { window._pts.rotation.y = elapsed * 0.03; window._pts.material.color.setHSL(0.57 + Math.sin(elapsed * 0.3) * 0.04, 0.8, 0.7); }
+  chandelierG.rotation.z = Math.sin(elapsed * 0.8) * 0.015;
+  chandelierG.rotation.x = Math.cos(elapsed * 0.6) * 0.01;
+
+  let li = 0;
+  scene.children.forEach(c => {
+    if (c instanceof THREE.PointLight && c !== topL && c !== goldL && c !== orbLight && c !== chandLight) {
+      c.intensity = 1.0 + Math.sin(elapsed * 1.5 + li * 0.7) * 0.5; li++;
+    }
+  });
+
+  renderer.render(scene, cam);
+  if (!done) requestAnimationFrame(animateScene);
+  if (elapsed >= TOTAL_DUR - 0.3 && !done) { done = true; startCurtain(); }
+}
+
+/* ══════════════════════════════════════
+   SEQUENCE
+══════════════════════════════════════ */
+const $ld = document.getElementById('loading');
+const $cvs = document.getElementById('three-canvas');
+const $overlay = document.getElementById('overlay-text');
+const $curtain = document.getElementById('curtain');
+const $cl = document.getElementById('cl');
+const $cr = document.getElementById('cr');
+const $invite = document.getElementById('invite');
+const $pbg = document.getElementById('pbg');
+const $deco = document.getElementById('deco15');
+
+const $btnStart = document.getElementById('btn-start');
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    $ld.style.opacity = '0';
+    setTimeout(() => {
+      $ld.style.display = 'none';
+      $btnStart.style.opacity = '1';
+      $btnStart.style.pointerEvents = 'auto';
+    }, 1200);
+  }, 2800);
+});
+
+$btnStart.addEventListener('click', () => {
+  $btnStart.style.opacity = '0';
+  $btnStart.style.pointerEvents = 'none';
+  tryPlayAudio();
+  $cvs.style.opacity = '1';
+  setTimeout(() => { $overlay.style.opacity = '1'; }, 2000);
+  setTimeout(() => { $overlay.style.opacity = '0'; }, 6000);
+  requestAnimationFrame(animateScene);
+});
+
+function startCurtain() {
+  $cvs.style.transition = 'opacity 1.2s ease';
+  $cvs.style.opacity = '0';
+  $overlay.style.opacity = '0';
+  setTimeout(() => {
+    $curtain.style.opacity = '1';
+    setTimeout(() => {
+      $cl.style.transform = 'translateX(-100%)';
+      $cr.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        $invite.style.opacity = '1';
+        $pbg.style.opacity = '1';
+        $deco.style.opacity = '1';
+        spawnStars(); startParticles(); revealCard();
+        tryPlayAudio();
+        setTimeout(confetti, 2800);
+      }, 600);
+    }, 800);
+  }, 1300);
+}
+
+function revealCard() {
+  const seq = [
+    { id: 'e0', d: 600 }, { id: 'e1', d: 900 }, { id: 'e2', d: 1200 },
+    { id: 'e3', d: 1500 }, { id: 'e4', d: 1800 }, { id: 'e5', d: 2100 },
+    { id: 'e6', d: 2400 }, { id: 'e7', d: 2700 }, { id: 'e8', d: 3000 },
+    { id: 'e9', d: 3300 }, { id: 'e10', d: 3600 }, { id: 'e11', d: 3900 },
+    { id: 'e12', d: 4200 }
+  ];
+  seq.forEach(({ id, d }) => { setTimeout(() => { const el = document.getElementById(id); if (el) el.classList.add('show'); }, d); });
+}
+
+/* ── BG Particles ── */
+function startParticles() {
+  const c = document.createElement('canvas');
+  $pbg.appendChild(c);
+  const resize = () => { c.width = innerWidth; c.height = innerHeight; };
+  resize(); window.addEventListener('resize', resize);
+  const cx = c.getContext('2d');
+  const dots = Array.from({ length: 120 }, () => ({
+    x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+    r: Math.random() * 1.8 + 0.4, vy: -(Math.random() * 0.5 + 0.12),
+    vx: (Math.random() - 0.5) * 0.12, op: Math.random() * 0.5 + 0.2,
+    ph: Math.random() * Math.PI * 2,
+    col: Math.random() > 0.45 ? '200,212,224' : '79,195,247'
+  }));
+  (function loop() {
+    cx.clearRect(0, 0, c.width, c.height);
+    dots.forEach(d => {
+      d.y += d.vy; d.x += d.vx; d.ph += 0.022;
+      if (d.y < -5) { d.y = c.height + 5; d.x = Math.random() * c.width; }
+      const o = d.op * (0.65 + 0.35 * Math.sin(d.ph));
+      cx.beginPath(); cx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      cx.fillStyle = `rgba(${d.col},${o})`; cx.fill();
+    });
+    requestAnimationFrame(loop);
+  })();
+}
+
+function spawnStars() {
+  for (let i = 0; i < 35; i++) {
+    const s = document.createElement('div'); s.className = 'star';
+    s.style.cssText = `left:${Math.random() * 100}vw;top:${Math.random() * 100}vh;--dur:${1.5 + Math.random() * 3}s;--del:${Math.random() * 4}s;width:${Math.random() * 2 + 1}px;height:${Math.random() * 2 + 1}px;`;
+    document.body.appendChild(s);
+  }
+}
+
+function confetti() {
+  const colors = ['#C9A84C', '#E8CC7A', '#4FC3F7', '#C8D4E0', '#9AAABB', '#81D4FA'];
+  for (let i = 0; i < 60; i++) {
+    const d = document.createElement('div'); d.className = 'conf';
+    d.style.cssText = `left:${10 + Math.random() * 80}vw;background:${colors[Math.floor(Math.random() * colors.length)]};border-radius:${Math.random() > 0.5 ? '50%' : '1px'};width:${4 + Math.random() * 5}px;height:${4 + Math.random() * 7}px;--spd:${3 + Math.random() * 4}s;--dl:${Math.random() * 2}s;`;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 8000);
+  }
+}
+
+function isSupabaseConfigured() {
+  return (
+    SUPABASE_URL !== 'https://SEU-PROJETO.supabase.co' &&
+    SUPABASE_ANON_KEY !== 'COLE_A_ANON_KEY_AQUI'
+  );
+}
+
+async function sendRsvpToSupabase(payload) {
+  const url = `${SUPABASE_URL}/rest/v1/rpc/aniversariomika_public_confirm_presence`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify({
+      p_event_id: payload.eventId,
+      p_guest: payload.guest
+    })
+  });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(txt || 'Falha ao enviar confirmacao.');
+  }
+}
+
+/* ── RSVP ── */
+async function rsvp() {
+  const name = guest || 'Convidado(a) Especial';
+  const btn = document.getElementById('e11');
+  const original = btn.innerHTML;
+
+  if (!isSupabaseConfigured()) {
+    alert('Configure SUPABASE_URL e SUPABASE_ANON_KEY antes de publicar.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span>Enviando confirmação...</span>';
+
+  const payload = {
+    eventId: EVENT_ID,
+    guest: name,
+    status: 'confirmed',
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await sendRsvpToSupabase(payload);
+    btn.innerHTML = '<span>Presença Confirmada ✓</span>';
+    btn.style.borderColor = 'var(--blue)';
+    btn.style.color = 'var(--blue)';
+    btn.onclick = null;
+  } catch (_) {
+    btn.disabled = false;
+    btn.innerHTML = original;
+    alert('Nao foi possivel confirmar agora. Tente novamente em alguns segundos.');
+  }
+}
+
+/* ── Resize ── */
+window.addEventListener('resize', () => {
+  cam.aspect = innerWidth / innerHeight;
+  cam.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
