@@ -166,7 +166,7 @@
 
   <script>
     const SUPABASE_URL = "https://dhihqmxjclyrqkbxshtv.supabase.co";
-    const SUPABASE_ANON_KEY = "COLE_A_SUA_ANON_KEY_AQUI";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWhxbXhqY2x5cnFrYnhzaHR2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjQ1MTgwOCwiZXhwIjoyMDc4MDI3ODA4fQ._zydp2QhF4eBAKWsYbDe7VF1iFqILkxe5Kw459dDaNY";
     const EVENT_ID = "mikaelly-15";
     const INVITE_FILE = "aniversario2.html";
 
@@ -186,9 +186,11 @@
     let currentAdminSecret = "";
 
     function isSupabaseConfigured() {
+      const key = (SUPABASE_ANON_KEY || "").trim();
       return (
         SUPABASE_URL !== "https://SEU-PROJETO.supabase.co" &&
-        SUPABASE_ANON_KEY !== "COLE_A_ANON_KEY_AQUI"
+        !key.startsWith("COLE_A_") &&
+        !key.includes("service_role")
       );
     }
 
@@ -225,7 +227,7 @@
 
       if (!res.ok) {
         const txt = await res.text();
-        throw new Error(txt || "Falha ao consultar confirmacoes.");
+        throw new Error(`HTTP ${res.status} - ${txt || "Falha ao consultar confirmacoes."}`);
       }
 
       const data = await res.json();
@@ -290,8 +292,15 @@
         $app.style.display = "block";
         renderConfirmations(items);
         $authError.textContent = "";
-      } catch (_) {
-        $authError.textContent = "Senha incorreta ou configuracao invalida.";
+      } catch (err) {
+        const msg = String(err?.message || "");
+        if (msg.includes("HTTP 401")) {
+          $authError.textContent = "Chave anon invalida/rotacionada. Atualize SUPABASE_ANON_KEY.";
+        } else if (msg.includes("Acesso negado")) {
+          $authError.textContent = "Senha do painel incorreta.";
+        } else {
+          $authError.textContent = "Configuracao invalida ou erro de conexao com Supabase.";
+        }
       } finally {
         $authBtn.disabled = false;
       }
