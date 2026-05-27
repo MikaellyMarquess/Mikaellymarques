@@ -166,7 +166,7 @@
 
   <script>
     const SUPABASE_URL = "https://dhihqmxjclyrqkbxshtv.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWhxbXhqY2x5cnFrYnhzaHR2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjQ1MTgwOCwiZXhwIjoyMDc4MDI3ODA4fQ._zydp2QhF4eBAKWsYbDe7VF1iFqILkxe5Kw459dDaNY";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWhxbXhqY2x5cnFrYnhzaHR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTE4MDgsImV4cCI6MjA3ODAyNzgwOH0.jD0RhVMTDHc4Ch9vV_PQ2OlBfyei-PA7VmvEJ1IWi3w";
     const EVENT_ID = "mikaelly-15";
     const INVITE_FILE = "aniversario2.html";
 
@@ -187,10 +187,20 @@
 
     function isSupabaseConfigured() {
       const key = (SUPABASE_ANON_KEY || "").trim();
+      let role = "";
+      try {
+        const payloadB64 = (key.split(".")[1] || "").replace(/-/g, "+").replace(/_/g, "/");
+        const padded = payloadB64 + "=".repeat((4 - (payloadB64.length % 4)) % 4);
+        const payload = JSON.parse(atob(padded));
+        role = String(payload.role || "");
+      } catch (_) {
+        role = "";
+      }
+
       return (
         SUPABASE_URL !== "https://SEU-PROJETO.supabase.co" &&
         !key.startsWith("COLE_A_") &&
-        !key.includes("service_role")
+        role !== "service_role"
       );
     }
 
@@ -226,8 +236,15 @@
       });
 
       if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`HTTP ${res.status} - ${txt || "Falha ao consultar confirmacoes."}`);
+        let detail = "Falha ao consultar confirmacoes.";
+        try {
+          const payload = await res.json();
+          detail = payload?.message || payload?.hint || payload?.details || JSON.stringify(payload);
+        } catch (_) {
+          const txt = await res.text();
+          detail = txt || detail;
+        }
+        throw new Error(`HTTP ${res.status} - ${detail}`);
       }
 
       const data = await res.json();
@@ -272,7 +289,7 @@
 
     async function loginAdmin() {
       if (!isSupabaseConfigured()) {
-        $authError.textContent = "Configure SUPABASE_URL e SUPABASE_ANON_KEY no admin.html.";
+        $authError.textContent = "Configure SUPABASE_URL e uma ANON key valida (nao use service_role).";
         return;
       }
 
@@ -298,6 +315,12 @@
           $authError.textContent = "Chave anon invalida/rotacionada. Atualize SUPABASE_ANON_KEY.";
         } else if (msg.includes("Acesso negado")) {
           $authError.textContent = "Senha do painel incorreta.";
+        } else if (msg.includes("Configuracao do painel nao encontrada")) {
+          $authError.textContent = "Tabela de configuracao ainda nao foi criada no Supabase.";
+        } else if (msg.includes("Could not find the function") || msg.includes("schema cache")) {
+          $authError.textContent = "Funcao RPC nao encontrada. Rode o script SQL completo no Supabase.";
+        } else if (msg.includes("HTTP 400")) {
+          $authError.textContent = `Erro 400 do Supabase: ${msg.replace("HTTP 400 - ", "")}`;
         } else {
           $authError.textContent = "Configuracao invalida ou erro de conexao com Supabase.";
         }
