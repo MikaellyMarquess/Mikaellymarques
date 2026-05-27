@@ -310,7 +310,7 @@ let audioStarted = false;
   CONFIG SUPABASE (RSVP)
 ══════════════════════════════════════ */
 const SUPABASE_URL = 'https://dhihqmxjclyrqkbxshtv.supabase.co';
-const SUPABASE_ANON_KEY = 'COLE_A_SUA_ANON_KEY_AQUI';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWhxbXhqY2x5cnFrYnhzaHR2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjQ1MTgwOCwiZXhwIjoyMDc4MDI3ODA4fQ._zydp2QhF4eBAKWsYbDe7VF1iFqILkxe5Kw459dDaNY';
 const EVENT_ID = 'mikaelly-15';
 
 function tryPlayAudio() {
@@ -695,9 +695,11 @@ function confetti() {
 }
 
 function isSupabaseConfigured() {
+  const key = (SUPABASE_ANON_KEY || '').trim();
   return (
     SUPABASE_URL !== 'https://SEU-PROJETO.supabase.co' &&
-    SUPABASE_ANON_KEY !== 'COLE_A_ANON_KEY_AQUI'
+    !key.startsWith('COLE_A_') &&
+    !key.includes('service_role')
   );
 }
 
