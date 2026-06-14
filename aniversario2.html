@@ -137,6 +137,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#040C26;font-family:
 #start-bow.unravel .bow-label,#start-bow.unravel .bow-glow{opacity:0}
 @keyframes bowPulse{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
 
+/* ─── Countdown Vencimento ─── */
+.inv-expiry{margin-top:14px;padding:12px 16px 10px;border:1px solid rgba(79,195,247,0.12);border-radius:12px;background:rgba(8,12,28,0.6);text-align:center}
+.exp-label{font-size:clamp(0.42rem,1vw,0.5rem);letter-spacing:4px;text-transform:uppercase;color:rgba(79,195,247,0.35);margin-bottom:8px;font-weight:300}
+.exp-timer{display:flex;justify-content:center;gap:clamp(6px,2vw,14px);align-items:flex-end}
+.exp-unit{display:flex;flex-direction:column;align-items:center;gap:2px}
+.exp-num{font-family:'Montserrat',sans-serif;font-size:clamp(1.1rem,3vw,1.7rem);font-weight:200;color:var(--silver);letter-spacing:0.05em;min-width:2ch;transition:color 0.5s}
+.exp-sep{font-family:'Montserrat',sans-serif;font-size:clamp(0.9rem,2.5vw,1.3rem);font-weight:200;color:rgba(79,195,247,0.25);padding-bottom:10px}
+.exp-lbl{font-size:clamp(0.35rem,0.85vw,0.42rem);letter-spacing:2px;text-transform:uppercase;color:rgba(150,170,200,0.3);font-weight:300}
+.exp-num.warn{color:#f0c04a}.exp-num.danger{color:#ff6b6b}
+.exp-expired{font-size:clamp(0.52rem,1.1vw,0.62rem);letter-spacing:5px;text-transform:uppercase;color:#ff6b6b;font-weight:300}
+
 /* ─── RESPONSIVO ─── */
 @media(max-width:480px){
   .card{padding:1.5rem 1rem;border-radius:0}
@@ -301,6 +312,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#040C26;font-family:
     <button class="btn el" id="e11" onclick="rsvp()"><span>Confirmar Presença</span></button>
 
     <div class="inv-footer el" id="e12">✦ Mikaelly — XV Anos ✦</div>
+
+    <div class="inv-expiry el" id="e13" style="display:none;">
+      <div class="exp-label">Convite válido por</div>
+      <div class="exp-timer" id="exp-timer">
+        <div class="exp-unit"><span class="exp-num" id="exp-d">00</span><span class="exp-lbl">dias</span></div>
+        <span class="exp-sep">:</span>
+        <div class="exp-unit"><span class="exp-num" id="exp-h">00</span><span class="exp-lbl">horas</span></div>
+        <span class="exp-sep">:</span>
+        <div class="exp-unit"><span class="exp-num" id="exp-m">00</span><span class="exp-lbl">min</span></div>
+        <span class="exp-sep">:</span>
+        <div class="exp-unit"><span class="exp-num" id="exp-s">00</span><span class="exp-lbl">seg</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -708,7 +732,7 @@ function revealCard() {
     { id: 'e3', d: 1500 }, { id: 'e4', d: 1800 }, { id: 'e5', d: 2100 },
     { id: 'e6', d: 2400 }, { id: 'e7', d: 2700 }, { id: 'e8', d: 3000 },
     { id: 'e9', d: 3300 }, { id: 'e10', d: 3600 }, { id: 'e11', d: 3900 },
-    { id: 'e12', d: 4200 }
+    { id: 'e12', d: 4200 }, { id: 'e13', d: 4500 }
   ];
   seq.forEach(({ id, d }) => { setTimeout(() => { const el = document.getElementById(id); if (el) el.classList.add('show'); }, d); });
 }
@@ -831,6 +855,62 @@ async function rsvp() {
     alert('Nao foi possivel confirmar agora. Tente novamente em alguns segundos.');
   }
 }
+
+/* ── Invite Expiry Countdown ── */
+(function () {
+  const params = new URLSearchParams(location.search);
+  const expStr = params.get('expires') || params.get('expira');
+  if (!expStr) return;
+
+  const expiresAt = new Date(expStr);
+  if (isNaN(expiresAt.getTime())) return;
+
+  const el13 = document.getElementById('e13');
+  if (el13) el13.style.display = '';
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tick() {
+    const diff = expiresAt - new Date();
+    const $timer = document.getElementById('exp-timer');
+    const $label = el13 ? el13.querySelector('.exp-label') : null;
+
+    if (diff <= 0) {
+      if ($timer) $timer.innerHTML = '<span class="exp-expired">Convite Expirado</span>';
+      if ($label) $label.style.display = 'none';
+      const btn = document.getElementById('e11');
+      if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.35';
+        btn.style.cursor = 'not-allowed';
+        btn.style.borderColor = '#ff6b6b';
+        btn.style.color = '#ff6b6b';
+        btn.innerHTML = '<span>Convite Expirado</span>';
+        btn.onclick = null;
+      }
+      return;
+    }
+
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000) / 60000);
+    const secs  = Math.floor((diff % 60000) / 1000);
+
+    const cls = diff < 7200000 ? 'exp-num danger' : diff < 86400000 ? 'exp-num warn' : 'exp-num';
+    const $d = document.getElementById('exp-d');
+    const $h = document.getElementById('exp-h');
+    const $m = document.getElementById('exp-m');
+    const $s = document.getElementById('exp-s');
+    if ($d) { $d.textContent = pad(days);  $d.className = cls; }
+    if ($h) { $h.textContent = pad(hours); $h.className = cls; }
+    if ($m) { $m.textContent = pad(mins);  $m.className = cls; }
+    if ($s) { $s.textContent = pad(secs);  $s.className = cls; }
+
+    setTimeout(tick, 1000);
+  }
+
+  tick();
+})();
 
 /* ── Resize ── */
 window.addEventListener('resize', () => {
