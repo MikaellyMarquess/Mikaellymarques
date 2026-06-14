@@ -22,8 +22,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#040C26;font-family:
 .ld-m{font-family:'Great Vibes',cursive;font-size:clamp(3rem,10vw,5.5rem);font-weight:400;color:var(--silver);letter-spacing:0.1em;opacity:0;animation:fadeUp 1.4s ease forwards 0.4s}
 .ld-sub{font-size:0.6rem;font-weight:300;letter-spacing:0.5em;color:var(--silver3);text-transform:uppercase;margin-top:0.6rem;opacity:0;animation:fadeUp 1.4s ease forwards 0.8s}
 .ld-bar-wrap{width:160px;height:1px;background:rgba(200,212,224,0.15);margin-top:2.5rem}
-.ld-bar{height:1px;width:0%;background:linear-gradient(90deg,var(--navy3),var(--silver),var(--blue));animation:loadFill 2.2s ease forwards 0.5s}
-@keyframes loadFill{to{width:100%}}
+.ld-bar{height:1px;width:0%;background:linear-gradient(90deg,var(--navy3),var(--silver),var(--blue));animation:loadFill 3.5s ease forwards 0.3s;transition:width 0.4s ease}
+@keyframes loadFill{to{width:85%}}
 @keyframes fadeUp{to{opacity:1}}
 
 /* ─── 3D Canvas ─── */
@@ -35,7 +35,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#040C26;font-family:
 .ot-name{font-family:'Great Vibes',cursive;font-size:clamp(38px,10vw,100px);text-align:center;background:linear-gradient(135deg,#e8e8e8,var(--blue),#c0c0c0,var(--blue2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 35px rgba(79,195,247,0.3))}
 
 /* ─── Curtain ─── */
-#curtain{position:fixed;inset:0;z-index:30;display:flex;pointer-events:none;opacity:0}
+#curtain{position:fixed;inset:0;z-index:30;display:flex;pointer-events:none;opacity:0;transition:opacity 0.5s ease}
 #cl,#cr{width:50%;height:100%;position:relative;transition:transform 2.4s cubic-bezier(0.76,0,0.24,1);will-change:transform}
 #cl{background:repeating-linear-gradient(90deg,rgba(255,255,255,0) 0px,rgba(255,255,255,0) 16px,rgba(255,255,255,0.025) 16px,rgba(255,255,255,0.025) 20px,rgba(0,0,0,0.08) 20px,rgba(0,0,0,0.08) 26px,rgba(255,255,255,0.015) 26px,rgba(255,255,255,0.015) 28px),linear-gradient(180deg,#1a3080 0%,#0D1B4B 35%,#040C26 100%)}
 #cr{background:repeating-linear-gradient(90deg,rgba(255,255,255,0.015) 0px,rgba(255,255,255,0.015) 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 8px,rgba(255,255,255,0.025) 8px,rgba(255,255,255,0.025) 12px,rgba(255,255,255,0) 12px,rgba(255,255,255,0) 28px),linear-gradient(180deg,#1a3080 0%,#0D1B4B 35%,#040C26 100%)}
@@ -398,6 +398,11 @@ const SUPABASE_URL = 'https://dhihqmxjclyrqkbxshtv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWhxbXhqY2x5cnFrYnhzaHR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NTE4MDgsImV4cCI6MjA3ODAyNzgwOH0.jD0RhVMTDHc4Ch9vV_PQ2OlBfyei-PA7VmvEJ1IWi3w';
 const EVENT_ID = 'mikaelly-15';
 
+/* ── Detecção de dispositivo e performance ── */
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const CORES = navigator.hardwareConcurrency || 4;
+const IS_LOW_END = CORES <= 2 || (isTouch && CORES <= 4 && devicePixelRatio < 2);
+
 function tryPlayAudio() {
   if (audioStarted) return;
   audioStarted = true;
@@ -453,7 +458,7 @@ const cvs = document.getElementById('three-canvas');
 const renderer = new THREE.WebGLRenderer({ canvas: cvs, antialias: true, alpha: false });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = !IS_LOW_END;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
@@ -469,7 +474,7 @@ scene.add(new THREE.AmbientLight(0x1a3080, 1.5));
 
 const sun = new THREE.DirectionalLight(0xffffff, 1.0);
 sun.position.set(4, 16, 6);
-sun.castShadow = true;
+sun.castShadow = !IS_LOW_END;
 sun.shadow.mapSize.set(1024, 1024);
 scene.add(sun);
 
@@ -498,7 +503,7 @@ const matFloor = new THREE.MeshStandardMaterial({ color: 0x050a15, metalness: 0.
 const matCol = new THREE.MeshStandardMaterial({ color: 0x0d1b3e, metalness: 0.6, roughness: 0.3, emissive: 0x0a1535, emissiveIntensity: 0.1 });
 
 /* ── Staircase ── */
-const STEPS = 18;
+const STEPS = IS_LOW_END ? 12 : 18;
 const SW = 5.2, SH = 0.22, SD = 1.1, RISE = 0.65;
 const stairG = new THREE.Group();
 scene.add(stairG);
@@ -585,7 +590,7 @@ scene.add(orbGlow);
 const orbHalo = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), new THREE.MeshBasicMaterial({ color: 0x87CEEB, transparent: true, opacity: 0.15 }));
 scene.add(orbHalo);
 
-const trailCount = 80;
+const trailCount = IS_LOW_END ? 40 : 80;
 const trailGeo = new THREE.BufferGeometry();
 const trailPos = new Float32Array(trailCount * 3);
 trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
@@ -596,7 +601,7 @@ const trailHistory = [];
 
 /* ── Sparkle Particles ── */
 (() => {
-  const N = 400, pos = new Float32Array(N * 3);
+  const N = IS_LOW_END ? 160 : 400, pos = new Float32Array(N * 3);
   for (let i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * 20; pos[i * 3 + 1] = Math.random() * 22; pos[i * 3 + 2] = (Math.random() - 0.5) * 25; }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -615,20 +620,42 @@ const trailHistory = [];
 ══════════════════════════════════════ */
 const TOTAL_DUR = 8.5;
 let t0 = null, done = false;
+let trailFadeStart = 0;
+const TRAIL_FADE_MS = 900;
 
 function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+function smoothstep(t) { return t * t * (3 - 2 * t); }
+function lerpV(a, b, t) { return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+
+/* Câmera cinematográfica com keyframes */
+const CAM_KF = [
+  { t: 0,    p: [ 5.5, 16,   18],  l: [ 0.5, 10,  -2]  },
+  { t: 0.18, p: [-3.5, 13,   11],  l: [-0.4,  9,  -4]  },
+  { t: 0.42, p: [ 2.5,  8,    4],  l: [ 0.2,  6,  -6]  },
+  { t: 0.68, p: [-1.8,  4.5,  0],  l: [ 0,    3.5, -8] },
+  { t: 1.0,  p: [ 0.4,  2,   -1],  l: [ 0,    1.5,-10] },
+];
+
+function camAtE(e) {
+  let k0 = CAM_KF[0], k1 = CAM_KF[1];
+  for (let i = 0; i < CAM_KF.length - 1; i++) {
+    if (e >= CAM_KF[i].t && e <= CAM_KF[i + 1].t) { k0 = CAM_KF[i]; k1 = CAM_KF[i + 1]; break; }
+  }
+  const span = k1.t - k0.t || 1;
+  const lt = smoothstep(Math.min((e - k0.t) / span, 1));
+  return { p: lerpV(k0.p, k1.p, lt), l: lerpV(k0.l, k1.l, lt) };
+}
 
 function animateScene(ts) {
-  if (done) return;
+  if (done && (ts - trailFadeStart) >= TRAIL_FADE_MS) return;
   if (!t0) t0 = ts;
   const elapsed = (ts - t0) / 1000;
   const t = Math.min(elapsed / TOTAL_DUR, 1);
   const e = ease(t);
 
-  const camY = 14 - e * 12;
-  const camZ = 14 - e * 16;
-  cam.position.set(Math.sin(e * 0.6) * 3.5, camY, camZ);
-  cam.lookAt(new THREE.Vector3(0, 8 - e * 7, -2 - e * 6));
+  const { p, l } = camAtE(e);
+  cam.position.set(p[0], p[1], p[2]);
+  cam.lookAt(new THREE.Vector3(l[0], l[1], l[2]));
 
   // Orb
   const orbStep = e * (STEPS - 1);
@@ -640,16 +667,22 @@ function animateScene(ts) {
   orbHalo.scale.setScalar(1 + Math.sin(elapsed * 3) * 0.2);
   orbGlow.material.opacity = 0.7 + Math.sin(elapsed * 4) * 0.3;
 
-  trailHistory.unshift({ x: 0, y: orbY, z: orbZ });
-  if (trailHistory.length > trailCount) trailHistory.pop();
-  for (let i = 0; i < trailCount; i++) {
-    const p = trailHistory[Math.min(i, trailHistory.length - 1)];
-    trailPos[i * 3] = p.x + (Math.random() - 0.5) * 0.15;
-    trailPos[i * 3 + 1] = p.y + (Math.random() - 0.5) * 0.15;
-    trailPos[i * 3 + 2] = p.z + (Math.random() - 0.5) * 0.15;
+  // Trail — some suave ao final da cena
+  if (!done) {
+    trailHistory.unshift({ x: 0, y: orbY, z: orbZ });
+    if (trailHistory.length > trailCount) trailHistory.pop();
+    for (let i = 0; i < trailCount; i++) {
+      const pt = trailHistory[Math.min(i, trailHistory.length - 1)];
+      trailPos[i * 3]     = pt.x + (Math.random() - 0.5) * 0.15;
+      trailPos[i * 3 + 1] = pt.y + (Math.random() - 0.5) * 0.15;
+      trailPos[i * 3 + 2] = pt.z + (Math.random() - 0.5) * 0.15;
+    }
+    trailGeo.attributes.position.needsUpdate = true;
+    trailMat.opacity = 0.4 + Math.sin(elapsed * 2) * 0.2;
+  } else {
+    const fadeFrac = Math.min((ts - trailFadeStart) / TRAIL_FADE_MS, 1);
+    trailMat.opacity = (0.4 + Math.sin(elapsed * 2) * 0.2) * (1 - fadeFrac);
   }
-  trailGeo.attributes.position.needsUpdate = true;
-  trailMat.opacity = 0.4 + Math.sin(elapsed * 2) * 0.2;
 
   if (window._pts) { window._pts.rotation.y = elapsed * 0.03; window._pts.material.color.setHSL(0.57 + Math.sin(elapsed * 0.3) * 0.04, 0.8, 0.7); }
   chandelierG.rotation.z = Math.sin(elapsed * 0.8) * 0.015;
@@ -663,8 +696,16 @@ function animateScene(ts) {
   });
 
   renderer.render(scene, cam);
-  if (!done) requestAnimationFrame(animateScene);
-  if (elapsed >= TOTAL_DUR - 0.3 && !done) { done = true; startCurtain(); }
+
+  if (elapsed >= TOTAL_DUR - 0.3 && !done) {
+    done = true;
+    trailFadeStart = ts;
+    startCurtain();
+  }
+
+  if (!done || (ts - trailFadeStart) < TRAIL_FADE_MS) {
+    requestAnimationFrame(animateScene);
+  }
 }
 
 /* ══════════════════════════════════════
@@ -681,7 +722,17 @@ const $pbg = document.getElementById('pbg');
 const $deco = document.getElementById('deco15');
 
 const $startBow = document.getElementById('start-bow');
+const $ldBar = document.querySelector('.ld-bar');
+const _loadStart = Date.now();
+
 window.addEventListener('load', () => {
+  // Para a animação CSS e completa a barra até 100% de verdade
+  $ldBar.style.animation = 'none';
+  $ldBar.style.width = '100%';
+
+  const elapsed = Date.now() - _loadStart;
+  const wait = Math.max(0, 1800 - elapsed); // mínimo 1.8s de loading visível
+
   setTimeout(() => {
     $ld.style.opacity = '0';
     setTimeout(() => {
@@ -689,8 +740,11 @@ window.addEventListener('load', () => {
       $startBow.style.opacity = '1';
       $startBow.style.pointerEvents = 'auto';
     }, 1200);
-  }, 2800);
+  }, wait);
 });
+
+// Texto do laço adaptado ao dispositivo
+document.querySelector('.bow-label').textContent = isTouch ? 'Toque no laço' : 'Clique no laço';
 
 $startBow.addEventListener('click', () => {
   $startBow.classList.add('unravel');
@@ -710,7 +764,7 @@ function startCurtain() {
   $cvs.style.opacity = '0';
   $overlay.style.opacity = '0';
   setTimeout(() => {
-    $curtain.style.opacity = '1';
+    $curtain.style.opacity = '1'; // fade in via CSS transition 0.5s
     setTimeout(() => {
       $cl.style.transform = 'translateX(-100%)';
       $cr.style.transform = 'translateX(100%)';
@@ -722,7 +776,7 @@ function startCurtain() {
         tryPlayAudio();
         setTimeout(confetti, 2800);
       }, 600);
-    }, 800);
+    }, 1000); // 500ms fade-in da cortina + 500ms pausa dramática
   }, 1300);
 }
 
@@ -765,11 +819,14 @@ function startParticles() {
 }
 
 function spawnStars() {
+  const stars = [];
   for (let i = 0; i < 35; i++) {
     const s = document.createElement('div'); s.className = 'star';
     s.style.cssText = `left:${Math.random() * 100}vw;top:${Math.random() * 100}vh;--dur:${1.5 + Math.random() * 3}s;--del:${Math.random() * 4}s;width:${Math.random() * 2 + 1}px;height:${Math.random() * 2 + 1}px;`;
     document.body.appendChild(s);
+    stars.push(s);
   }
+  setTimeout(() => stars.forEach(s => s.remove()), 60000);
 }
 
 function confetti() {
