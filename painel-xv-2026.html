@@ -115,6 +115,22 @@
       color: #ff9ea6;
       font-size: 0.9rem;
     }
+    .expiry-section { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+    .preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 8px; }
+    .preset-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(13,24,53,0.7);
+      color: var(--muted);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preset-btn:hover { filter: brightness(1.15); }
+    .preset-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(79,195,247,0.08); }
+    .expiry-info { font-size: 0.8rem; color: var(--ok); margin-top: 6px; min-height: 18px; }
+    input[type="date"] { color-scheme: dark; }
   </style>
 </head>
 <body>
@@ -155,6 +171,21 @@
           <input id="guest-name" placeholder="Nome da convidada" />
           <button id="btn-generate">Gerar</button>
         </div>
+
+        <div class="expiry-section">
+          <p class="small" style="margin:0 0 4px;">Vencimento do convite:</p>
+          <div class="preset-row">
+            <button class="preset-btn" data-days="7">7 dias</button>
+            <button class="preset-btn" data-days="15">15 dias</button>
+            <button class="preset-btn" data-days="30">30 dias</button>
+            <button class="preset-btn" data-days="0">Sem vencimento</button>
+          </div>
+          <div class="row">
+            <input type="date" id="expiry-date" placeholder="Ou escolha a data" />
+          </div>
+          <div class="expiry-info" id="expiry-info">Nenhum vencimento definido.</div>
+        </div>
+
         <div class="out" id="link-out"></div>
         <div class="row" style="margin-top:10px;">
           <button id="btn-copy">Copiar link</button>
@@ -184,6 +215,7 @@
     const $out = document.getElementById("link-out");
 
     let currentAdminSecret = "";
+    let selectedExpiry = null;
 
     function isSupabaseConfigured() {
       const key = (SUPABASE_ANON_KEY || "").trim();
@@ -216,7 +248,10 @@
         $out.textContent = "Digite um nome para gerar o link.";
         return "";
       }
-      const link = `${inviteBaseUrl()}?para=${encodeURIComponent(guest)}`;
+      let link = `${inviteBaseUrl()}?para=${encodeURIComponent(guest)}`;
+      if (selectedExpiry) {
+        link += `&expires=${encodeURIComponent(selectedExpiry.toISOString())}`;
+      }
       $out.textContent = link;
       return link;
     }
@@ -328,6 +363,49 @@
         $authBtn.disabled = false;
       }
     }
+
+    /* ── Expiry presets ── */
+    const $expiryDate = document.getElementById("expiry-date");
+    const $expiryInfo = document.getElementById("expiry-info");
+
+    function setExpiry(date) {
+      selectedExpiry = date;
+      if (date) {
+        $expiryDate.value = date.toISOString().slice(0, 10);
+        $expiryInfo.textContent = `Vence em: ${date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}`;
+        $expiryInfo.style.color = "var(--ok)";
+      } else {
+        $expiryDate.value = "";
+        $expiryInfo.textContent = "Nenhum vencimento definido.";
+        $expiryInfo.style.color = "var(--muted)";
+      }
+    }
+
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const days = parseInt(btn.dataset.days, 10);
+        if (days === 0) {
+          setExpiry(null);
+        } else {
+          const d = new Date();
+          d.setDate(d.getDate() + days);
+          d.setHours(23, 59, 59, 0);
+          setExpiry(d);
+        }
+      });
+    });
+
+    $expiryDate.addEventListener("change", (e) => {
+      document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("active"));
+      if (e.target.value) {
+        const d = new Date(e.target.value + "T23:59:59");
+        setExpiry(d);
+      } else {
+        setExpiry(null);
+      }
+    });
 
     $event.textContent = EVENT_ID;
 
